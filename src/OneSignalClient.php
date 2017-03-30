@@ -204,6 +204,28 @@ class OneSignalClient
         $this->headers['verify'] = false;
         return $this->post(self::ENDPOINT_NOTIFICATIONS);
     }
+    
+    public function cancelNotification($notificationId = null) {
+    
+        if(empty($notificationId))
+            throw new \Exception('The `notificationId` is required');
+        
+        $this->requiresAuth();
+        $this->usesJSON();
+
+        // Make sure to use app_id
+        $parameters['app_id'] = $this->appId;
+
+        $parameters = array_merge($parameters, $this->additionalParams);
+
+        $this->headers['body'] = json_encode($parameters);
+        $this->headers['verify'] = false;
+        
+        $cancelUrl = self::ENDPOINT_NOTIFICATIONS . '/' . $notificationId;
+        
+        return $this->delete($cancelUrl);
+        
+    }
 
     /**
      * Creates a user/player
@@ -255,6 +277,14 @@ class OneSignalClient
             return (is_callable($this->requestCallback) ? $promise->then($this->requestCallback) : $promise);
         }
         return $this->client->post(self::API_URL . $endPoint, $this->headers);
+    }
+    
+    public function delete($endPoint) {
+        if($this->requestAsync === true) {
+            $promise = $this->client->postAsync(self::API_URL . $endPoint, $this->headers);
+            return (is_callable($this->requestCallback) ? $promise->then($this->requestCallback) : $promise);
+        }
+        return $this->client->delete(self::API_URL . $endPoint, $this->headers);
     }
 
     public function put($endPoint) {
